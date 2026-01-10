@@ -39,8 +39,7 @@ On my _todolist_ are still in order of current priority:
 - Mobile apps.
 - Public shareable recipe links.
 - Add direclty the recipe from Youtube, Instagram, TikTok or other without leaving the app.
-
-<video src="./public/exemple_add_recipe_from_instagram.mp4" type="video/mp4" width="25%" alt="ios enable norish in share screen ios" />
+- <video src="./public/exemple_add_recipe_from_instagram.mp4" type="video/mp4" width="25%" alt="preview add recipe from instagram" />
 
 ---
 
