@@ -285,6 +285,7 @@ export function transcriptionProviderSupportsModelListing(
 
 export const VideoConfigSchema = z.object({
   enabled: z.boolean(),
+  storeVideos: z.boolean().default(true), // Whether to download and store videos (vs. audio-only)
   maxLengthSeconds: z.number().int().positive(),
   ytDlpVersion: z.string().min(1),
   // Transcription settings (required for video processing)

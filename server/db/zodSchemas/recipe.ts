@@ -51,6 +51,7 @@ export const FullRecipeSchema = RecipeSelectBaseSchema.extend({
   tags: z.array(TagNameSchema).default([]),
   author: AuthorSchema,
   images: RecipeImagesArraySchema.default([]),
+  videoFilename: z.string().nullable().optional(),
 });
 
 export const FullRecipeInsertSchema = RecipeInsertBaseSchema.extend({
@@ -59,6 +60,7 @@ export const FullRecipeInsertSchema = RecipeInsertBaseSchema.extend({
   tags: z.array(TagNameSchema).default([]),
   steps: z.array(StepStepSchema).default([]),
   images: z.array(RecipeImageSchema).max(10).default([]),
+  videoFilename: z.string().nullable().optional(),
 });
 
 export const FullRecipeUpdateSchema = RecipeUpdateBaseSchema.extend({
@@ -66,6 +68,7 @@ export const FullRecipeUpdateSchema = RecipeUpdateBaseSchema.extend({
   tags: z.array(TagNameSchema).optional(),
   steps: z.array(StepStepSchema).optional(),
   images: z.array(RecipeImageSchema).max(10).optional(),
+  videoFilename: z.string().nullable().optional(),
 });
 
 export const measurementSystems = measurementSystemEnum.enumValues;

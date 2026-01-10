@@ -430,6 +430,8 @@
       "enableVideo": "Enable Video Parsing",
       "enableVideoDescription": "Extract recipes from TikTok, Instagram, YouTube Shorts or Facebook",
       "configureWarning": "Configure a transcription provider below to enable video processing.",
+      "storeVideos": "Store Videos",
+      "storeVideosDescription": "Download and store full videos for viewing in recipes",
       "maxLength": "Max Video Length (seconds)",
       "maxLengthDescription": "Longer videos take more time and resources to process",
       "ytDlpVersion": "yt-dlp Version",

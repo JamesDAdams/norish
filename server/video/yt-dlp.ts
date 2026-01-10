@@ -104,7 +104,87 @@ const ytDlpFilename = process.platform === "win32" ? "yt-dlp.exe" : "yt-dlp";
 // In production (Docker), binary is pre-downloaded during build to /app/bin
 // In development, download to current directory on first use
 const ytDlpPath = path.resolve(SERVER_CONFIG.YT_DLP_BIN_DIR, ytDlpFilename);
-const outputDir = path.join(SERVER_CONFIG.UPLOADS_DIR, "video-temp");
+const audioTempDir = path.join(SERVER_CONFIG.UPLOADS_DIR, "video-temp");
+const videoDir = path.join(SERVER_CONFIG.UPLOADS_DIR, "video");
+
+// Legacy alias for backward compatibility
+const outputDir = audioTempDir;
+
+/**
+ * Download video and extract audio in one step (legacy method).
+ * Used when storeVideos is disabled - only extracts audio without keeping video.
+ * Outputs WAV format directly to uploads/video-temp/.
+ *
+ * @param url - The video URL to download audio from
+ * @returns The full path to the extracted audio file
+ */
+export async function downloadVideoAudio(url: string): Promise<string> {
+  await ensureYtDlpBinary();
+  await fs.mkdir(outputDir, { recursive: true });
+
+  const ytDlpWrap = new YTDlpWrap(ytDlpPath);
+  const timestamp = Date.now();
+  const randomId = Math.random().toString(36).substring(7);
+  const outputFile = path.join(outputDir, `audio-${timestamp}-${randomId}.wav`);
+
+  try {
+    // Download video and extract audio as WAV format
+    const ffmpegBinary = getFfmpegPath();
+    const ffmpegDir = ffmpegBinary ? path.dirname(ffmpegBinary) : undefined;
+
+    log.debug({ ffmpegDir, ffmpegBinary }, "Using ffmpeg for audio extraction");
+
+    const args = [
+      url,
+      "-x", // Extract audio
+      "--audio-format",
+      "wav", // Convert to WAV
+      "--audio-quality",
+      "0", // Best quality
+      "-o",
+      outputFile, // Output file
+      "--extractor-args",
+      "youtube:player_client=default", // Suppress JS runtime warning
+    ];
+
+    // Add ffmpeg location if available
+    if (ffmpegDir) {
+      args.push("--ffmpeg-location", ffmpegDir);
+    }
+
+    await ytDlpWrap.execPromise(args);
+    try {
+      await fs.stat(outputFile);
+    } catch {
+      throw new Error("Could not create audio file.");
+    }
+
+    return outputFile;
+  } catch (error: any) {
+    log.error({ err: error }, "Failed to download video audio");
+
+    // Cleanup on failure
+    try {
+      await fs.unlink(outputFile).catch(() => {});
+    } catch (cleanupErr) {
+      log.error({ err: cleanupErr }, "Failed to cleanup temp file");
+    }
+
+    if (error.message?.includes("Unsupported URL")) {
+      throw new Error("Video platform not supported or URL is invalid.");
+    }
+    if (error.message?.includes("Video unavailable") || error.message?.includes("private")) {
+      throw new Error("Video is unavailable or private.");
+    }
+    if (error.message?.includes("HTTP Error 429")) {
+      throw new Error("Rate limited by video platform. Please try again later.");
+    }
+
+    const errorMessage = error.message || "Unknown error";
+
+    throw new Error(`Failed to download video: ${errorMessage}`);
+  }
+}
 
 export async function ensureYtDlpBinary(): Promise<void> {
   log.debug({ ytDlpPath }, "Checking for binary");
@@ -176,31 +256,55 @@ export async function getVideoMetadata(url: string): Promise<VideoMetadata> {
   }
 }
 
-export async function downloadVideoAudio(url: string): Promise<string> {
+export async function validateVideoLength(url: string): Promise<void> {
+  const metadata = await getVideoMetadata(url);
+  const videoConfig = await getVideoConfig();
+  const maxLength = videoConfig?.maxLengthSeconds ?? SERVER_CONFIG.VIDEO_MAX_LENGTH_SECONDS;
+
+  if (metadata.duration > maxLength) {
+    const actualMinutes = Math.floor(metadata.duration / 60);
+    const actualSeconds = metadata.duration % 60;
+    const maxMinutes = Math.floor(maxLength / 60);
+    const maxSeconds = maxLength % 60;
+
+    const maxTime = `${maxMinutes}:${maxSeconds.toString().padStart(2, "0")}`;
+    const actualTime = `${actualMinutes}:${actualSeconds.toString().padStart(2, "0")}`;
+
+    throw new Error(`Video exceeds maximum length of ${maxTime} (actual: ${actualTime})`);
+  }
+}
+
+/**
+ * Download the full video file to uploads/video/ (persistent storage).
+ * Forces MP4 format for maximum compatibility.
+ *
+ * @param url - The video URL to download
+ * @returns The full path to the downloaded video file
+ */
+export async function downloadVideo(url: string): Promise<string> {
   await ensureYtDlpBinary();
-  await fs.mkdir(outputDir, { recursive: true });
+  await fs.mkdir(videoDir, { recursive: true });
 
   const ytDlpWrap = new YTDlpWrap(ytDlpPath);
   const timestamp = Date.now();
   const randomId = Math.random().toString(36).substring(7);
-  const outputFile = path.join(outputDir, `audio-${timestamp}-${randomId}.wav`);
+  const filename = `video-${timestamp}-${randomId}.mp4`;
+  const outputFile = path.join(videoDir, filename);
 
   try {
-    // Download video and extract audio as WAV format
     const ffmpegBinary = getFfmpegPath();
     const ffmpegDir = ffmpegBinary ? path.dirname(ffmpegBinary) : undefined;
 
-    log.debug({ ffmpegDir, ffmpegBinary }, "Using ffmpeg for audio extraction");
+    log.debug({ ffmpegDir, outputFile }, "Downloading video");
 
     const args = [
       url,
-      "-x", // Extract audio
-      "--audio-format",
-      "wav", // Convert to WAV
-      "--audio-quality",
-      "0", // Best quality
       "-o",
-      outputFile, // Output file
+      outputFile,
+      "--merge-output-format",
+      "mp4", // Force MP4 output
+      "--recode-video",
+      "mp4", // Re-encode if needed
       "--extractor-args",
       "youtube:player_client=default", // Suppress JS runtime warning
     ];
@@ -211,21 +315,25 @@ export async function downloadVideoAudio(url: string): Promise<string> {
     }
 
     await ytDlpWrap.execPromise(args);
+
+    // Verify file exists
     try {
       await fs.stat(outputFile);
     } catch {
-      throw new Error("Could not create audio file.");
+      throw new Error("Could not create video file.");
     }
+
+    log.info({ outputFile }, "Video downloaded successfully");
 
     return outputFile;
   } catch (error: any) {
-    log.error({ err: error }, "Failed to download video audio");
+    log.error({ err: error }, "Failed to download video");
 
     // Cleanup on failure
     try {
       await fs.unlink(outputFile).catch(() => {});
     } catch (cleanupErr) {
-      log.error({ err: cleanupErr }, "Failed to cleanup temp file");
+      log.error({ err: cleanupErr }, "Failed to cleanup temp video file");
     }
 
     if (error.message?.includes("Unsupported URL")) {
@@ -244,20 +352,58 @@ export async function downloadVideoAudio(url: string): Promise<string> {
   }
 }
 
-export async function validateVideoLength(url: string): Promise<void> {
-  const metadata = await getVideoMetadata(url);
-  const videoConfig = await getVideoConfig();
-  const maxLength = videoConfig?.maxLengthSeconds ?? SERVER_CONFIG.VIDEO_MAX_LENGTH_SECONDS;
+/**
+ * Extract audio from a video file using ffmpeg.
+ * Outputs WAV format to uploads/video-temp/ (temporary storage).
+ *
+ * @param videoPath - The full path to the video file
+ * @returns The full path to the extracted audio file
+ */
+export async function extractAudioFromVideo(videoPath: string): Promise<string> {
+  const ffmpegBinary = getFfmpegPath();
 
-  if (metadata.duration > maxLength) {
-    const actualMinutes = Math.floor(metadata.duration / 60);
-    const actualSeconds = metadata.duration % 60;
-    const maxMinutes = Math.floor(maxLength / 60);
-    const maxSeconds = maxLength % 60;
+  if (!ffmpegBinary) {
+    throw new Error("ffmpeg not found - cannot extract audio");
+  }
 
-    const maxTime = `${maxMinutes}:${maxSeconds.toString().padStart(2, "0")}`;
-    const actualTime = `${actualMinutes}:${actualSeconds.toString().padStart(2, "0")}`;
+  await fs.mkdir(audioTempDir, { recursive: true });
 
-    throw new Error(`Video exceeds maximum length of ${maxTime} (actual: ${actualTime})`);
+  const timestamp = Date.now();
+  const randomId = Math.random().toString(36).substring(7);
+  const audioPath = path.join(audioTempDir, `audio-${timestamp}-${randomId}.wav`);
+
+  log.debug({ videoPath, audioPath, ffmpegBinary }, "Extracting audio from video");
+
+  try {
+    // Use ffmpeg to extract audio as WAV (mono, 16kHz for transcription)
+    execSync(
+      `"${ffmpegBinary}" -i "${videoPath}" -vn -acodec pcm_s16le -ar 16000 -ac 1 "${audioPath}"`,
+      {
+        timeout: 120000, // 2 minutes timeout
+        stdio: "pipe",
+      }
+    );
+
+    // Verify file exists
+    try {
+      await fs.stat(audioPath);
+    } catch {
+      throw new Error("Could not extract audio from video.");
+    }
+
+    log.info({ audioPath }, "Audio extracted successfully");
+
+    return audioPath;
+  } catch (error: any) {
+    log.error({ err: error }, "Failed to extract audio from video");
+
+    // Cleanup on failure
+    try {
+      await fs.unlink(audioPath).catch(() => {});
+    } catch (cleanupErr) {
+      log.error({ err: cleanupErr }, "Failed to cleanup temp audio file");
+    }
+
+    throw new Error(`Failed to extract audio: ${error.message || "Unknown error"}`);
   }
 }

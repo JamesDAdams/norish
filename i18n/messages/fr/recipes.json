@@ -40,7 +40,8 @@
     "prep": "préparation",
     "total": "total",
     "planMeal": "Planifier un repas",
-    "recipeActions": "Actions de la recette"
+    "recipeActions": "Actions de la recette",
+    "videoNotSupported": "Votre navigateur ne supporte pas la balise vidéo."
   },
   "actions": {
     "plan": "Planifier",

@@ -34,6 +34,7 @@ export const recipes = pgTable(
     fat: numeric("fat", { precision: 6, scale: 2 }),
     carbs: numeric("carbs", { precision: 6, scale: 2 }),
     protein: numeric("protein", { precision: 6, scale: 2 }),
+    videoFilename: text("video_filename"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },

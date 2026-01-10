@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   WrenchScrewdriverIcon,
   FireIcon,
@@ -14,6 +15,7 @@ import { useTranslations } from "next-intl";
 import AuthorChip from "./components/author-chip";
 import { useRecipeContextRequired } from "./context";
 import ServingsControl from "./components/servings-control";
+import MediaViewer from "./components/media-viewer";
 
 import { formatMinutesHM, sortTagsWithAllergyPriority, isAllergenTag } from "@/lib/helpers";
 import SystemConvertMenu from "@/app/(app)/recipes/[id]/components/system-convert-menu";
@@ -22,7 +24,7 @@ import IngredientsList from "@/app/(app)/recipes/[id]/components/ingredient-list
 import ActionsMenu from "@/app/(app)/recipes/[id]/components/actions-menu";
 import AddToGroceries from "@/app/(app)/recipes/[id]/components/add-to-groceries-button";
 import WakeLockToggle from "@/app/(app)/recipes/[id]/components/wake-lock-toggle";
-import ImageCarousel, { type CarouselImage } from "@/components/shared/image-carousel";
+import { type CarouselImage } from "@/components/shared/image-carousel";
 import SmartMarkdownRenderer from "@/components/shared/smart-markdown-renderer";
 import HeartButton from "@/components/shared/heart-button";
 import DoubleTapContainer from "@/components/shared/double-tap-container";
@@ -30,6 +32,7 @@ import StarRating from "@/components/shared/star-rating";
 import { useFavoritesQuery, useFavoritesMutation } from "@/hooks/favorites";
 import { useRatingQuery, useRatingsMutation } from "@/hooks/ratings";
 import NutritionCard from "@/components/recipes/nutrition-card";
+import MediaToggleButton from "@/components/shared/media-toggle-button";
 
 export default function RecipePageDesktop() {
   const {
@@ -47,6 +50,7 @@ export default function RecipePageDesktop() {
   const isFavorite = checkFavorite(recipe.id);
   const handleToggleFavorite = () => toggleFavorite(recipe.id);
   const handleRateRecipe = (rating: number) => rateRecipe(recipe.id, rating);
+  const [showVideo, setShowVideo] = useState(false);
 
   // Build carousel images from recipe.images with fallback to legacy recipe.image
   const carouselImages: CarouselImage[] =
@@ -181,22 +185,32 @@ export default function RecipePageDesktop() {
           {/* Hero image carousel - wrapped to match Card styling */}
           <div className="relative overflow-hidden rounded-2xl shadow-md">
             <DoubleTapContainer onDoubleTap={handleToggleFavorite}>
-              <ImageCarousel
+              <MediaViewer
                 className="min-h-[400px]"
                 images={carouselImages}
                 recipeName={recipe.name ?? "Recipe"}
                 rounded={false}
+                showVideo={showVideo}
+                videoFilename={recipe.videoFilename}
               />
             </DoubleTapContainer>
 
             {/* Heart button - top right (always visible) */}
-            <div className="absolute top-4 right-4 z-50">
+            <div className="absolute top-4 right-4 z-50 flex flex-col gap-2">
               <HeartButton
                 showBackground
                 isFavorite={isFavorite}
                 size="lg"
                 onToggle={handleToggleFavorite}
               />
+              {recipe.videoFilename && (
+                <MediaToggleButton
+                  showBackground
+                  showVideo={showVideo}
+                  size="lg"
+                  onToggle={() => setShowVideo(!showVideo)}
+                />
+              )}
             </div>
 
             {/* Author badge */}

@@ -40,7 +40,8 @@
     "prep": "prep",
     "total": "total",
     "planMeal": "Plan meal",
-    "recipeActions": "Recipe actions"
+    "recipeActions": "Recipe actions",
+    "videoNotSupported": "Your browser does not support the video tag."
   },
   "actions": {
     "plan": "Plan",

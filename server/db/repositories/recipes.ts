@@ -396,6 +396,7 @@ export async function listRecipes(
         prepMinutes: true,
         cookMinutes: true,
         totalMinutes: true,
+        videoFilename: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -440,6 +441,7 @@ export async function listRecipes(
       prepMinutes: r.prepMinutes ?? null,
       cookMinutes: r.cookMinutes ?? null,
       totalMinutes: r.totalMinutes ?? null,
+      videoFilename: r.videoFilename ?? null,
       createdAt: r.createdAt,
       updatedAt: r.updatedAt,
       tags: (r.recipeTags ?? [])
@@ -489,6 +491,7 @@ export async function dashboardRecipe(id: string): Promise<RecipeDashboardDTO | 
       prepMinutes: true,
       cookMinutes: true,
       totalMinutes: true,
+      videoFilename: true,
       createdAt: true,
       updatedAt: true,
     },
@@ -579,6 +582,7 @@ export async function createRecipeWithRefs(
     fat: payload.fat ?? null,
     carbs: payload.carbs ?? null,
     protein: payload.protein ?? null,
+    videoFilename: payload.videoFilename ?? null,
   };
 
   const finalRecipeId = await db.transaction(async (tx) => {
@@ -674,6 +678,7 @@ export async function getRecipeFull(id: string): Promise<FullRecipeDTO | null> {
       fat: true,
       carbs: true,
       protein: true,
+      videoFilename: true,
       createdAt: true,
       updatedAt: true,
     },
@@ -738,6 +743,7 @@ export async function getRecipeFull(id: string): Promise<FullRecipeDTO | null> {
     fat: full.fat ?? null,
     carbs: full.carbs ?? null,
     protein: full.protein ?? null,
+    videoFilename: full.videoFilename ?? null,
     steps: ((full.steps as any) ?? []).map((s: any) => ({
       step: s.step,
       systemUsed: s.systemUsed,
@@ -840,6 +846,7 @@ export async function updateRecipeWithRefs(
     if (payload.fat !== undefined) updateData.fat = payload.fat;
     if (payload.carbs !== undefined) updateData.carbs = payload.carbs;
     if (payload.protein !== undefined) updateData.protein = payload.protein;
+    if (payload.videoFilename !== undefined) updateData.videoFilename = payload.videoFilename;
 
     updateData.updatedAt = new Date();
 

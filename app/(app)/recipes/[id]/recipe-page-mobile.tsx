@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   ClockIcon,
   FireIcon,
@@ -9,6 +10,7 @@ import { useTranslations } from "next-intl";
 
 import AuthorChip from "./components/author-chip";
 import { useRecipeContextRequired } from "./context";
+import MediaViewer from "./components/media-viewer";
 
 import ActionsMenu from "@/app/(app)/recipes/[id]/components/actions-menu";
 import AddToGroceries from "@/app/(app)/recipes/[id]/components/add-to-groceries-button";
@@ -22,10 +24,11 @@ import SmartMarkdownRenderer from "@/components/shared/smart-markdown-renderer";
 import HeartButton from "@/components/shared/heart-button";
 import DoubleTapContainer from "@/components/shared/double-tap-container";
 import StarRating from "@/components/shared/star-rating";
-import ImageCarousel, { type CarouselImage } from "@/components/shared/image-carousel";
+import { type CarouselImage } from "@/components/shared/image-carousel";
 import { useFavoritesQuery, useFavoritesMutation } from "@/hooks/favorites";
 import { useRatingQuery, useRatingsMutation } from "@/hooks/ratings";
 import { NutritionSection } from "@/components/recipes/nutrition-card";
+import MediaToggleButton from "@/components/shared/media-toggle-button";
 
 export default function RecipePageMobile() {
   const {
@@ -43,6 +46,7 @@ export default function RecipePageMobile() {
   const isFavorite = checkFavorite(recipe.id);
   const handleToggleFavorite = () => toggleFavorite(recipe.id);
   const handleRateRecipe = (rating: number) => rateRecipe(recipe.id, rating);
+  const [showVideo, setShowVideo] = useState(false);
 
   // Build carousel images from recipe.images with fallback to legacy recipe.image
   const carouselImages: CarouselImage[] =
@@ -57,12 +61,14 @@ export default function RecipePageMobile() {
       {/* Hero Image Carousel */}
       <div className="relative w-full overflow-hidden" style={{ height: "18rem" }}>
         <DoubleTapContainer className="h-full w-full" onDoubleTap={handleToggleFavorite}>
-          <ImageCarousel
+          <MediaViewer
             aspectRatio="4/3"
             className="h-full w-full"
             images={carouselImages}
             recipeName={recipe.name ?? "Recipe"}
             rounded={false}
+            showVideo={showVideo}
+            videoFilename={recipe.videoFilename}
           />
         </DoubleTapContainer>
 
@@ -76,14 +82,25 @@ export default function RecipePageMobile() {
           </div>
         )}
 
-        {/* Heart button - bottom right (always visible) */}
-        <div className="absolute right-4 bottom-4 z-50">
+        {/* Heart button and media toggle - top right */}
+        <div
+          className="absolute right-4 z-50 flex flex-col gap-2"
+          style={{ top: `calc(1rem + env(safe-area-inset-top))` }}
+        >
           <HeartButton
             showBackground
             isFavorite={isFavorite}
             size="lg"
             onToggle={handleToggleFavorite}
           />
+          {recipe.videoFilename && (
+            <MediaToggleButton
+              showBackground
+              showVideo={showVideo}
+              size="lg"
+              onToggle={() => setShowVideo(!showVideo)}
+            />
+          )}
         </div>
       </div>
 

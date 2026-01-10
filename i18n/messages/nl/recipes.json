@@ -40,7 +40,8 @@
     "prep": "voorb.",
     "total": "totaal",
     "planMeal": "Plannen",
-    "recipeActions": "Recept acties"
+    "recipeActions": "Recept acties",
+    "videoNotSupported": "Je browser ondersteunt de video-tag niet."
   },
   "actions": {
     "plan": "Plan",

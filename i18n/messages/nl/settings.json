@@ -430,6 +430,8 @@
       "enableVideo": "Video parsing inschakelen",
       "enableVideoDescription": "Extraheer recepten van TikTok, Instagram, YouTube Shorts of Facebook",
       "configureWarning": "Configureer hieronder een transcriptieprovider om videobewerking in te schakelen.",
+      "storeVideos": "Video's opslaan",
+      "storeVideosDescription": "Download en sla volledige video's op om te bekijken in recepten",
       "maxLength": "Max videolengte (seconden)",
       "maxLengthDescription": "Langere video's kosten meer tijd en middelen om te verwerken",
       "ytDlpVersion": "yt-dlp Versie",

@@ -2,6 +2,7 @@
 
 import { HeartIcon } from "@heroicons/react/24/solid";
 import { useCallback } from "react";
+import { ICON_SIZE_CLASSES } from "../../types/icon-sizes";
 
 type HeartButtonProps = {
   isFavorite: boolean;
@@ -10,12 +11,6 @@ type HeartButtonProps = {
   className?: string;
   showBackground?: boolean;
   hideWhenNotFavorite?: boolean;
-};
-
-const sizeClasses = {
-  sm: "size-4",
-  md: "size-5",
-  lg: "size-6",
 };
 
 export default function HeartButton({
@@ -35,7 +30,7 @@ export default function HeartButton({
     [onToggle]
   );
 
-  const iconSize = sizeClasses[size];
+  const iconSize = ICON_SIZE_CLASSES[size];
 
   // Hide completely when not favorited and hideWhenNotFavorite is true
   if (hideWhenNotFavorite && !isFavorite) {

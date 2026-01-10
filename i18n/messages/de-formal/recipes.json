@@ -40,7 +40,8 @@
     "prep": "Vorbereitung",
     "total": "gesamt",
     "planMeal": "Mahlzeit planen",
-    "recipeActions": "Rezept-Aktionen"
+    "recipeActions": "Rezept-Aktionen",
+    "videoNotSupported": "Ihr Browser unterstützt das Video-Tag nicht."
   },
   "actions": {
     "plan": "Planen",

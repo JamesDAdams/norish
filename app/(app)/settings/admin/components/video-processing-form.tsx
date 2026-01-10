@@ -33,6 +33,7 @@ export default function VideoProcessingForm() {
 
   // Combined video + transcription config state
   const [enabled, setEnabled] = useState(videoConfig?.enabled ?? false);
+  const [storeVideos, setStoreVideos] = useState(videoConfig?.storeVideos ?? true);
   const [maxLengthSeconds, setMaxLengthSeconds] = useState(videoConfig?.maxLengthSeconds ?? 120);
   const [ytDlpVersion, setYtDlpVersion] = useState(videoConfig?.ytDlpVersion ?? "2025.11.12");
   const [transcriptionProvider, setTranscriptionProvider] = useState<TranscriptionProvider>(
@@ -51,6 +52,7 @@ export default function VideoProcessingForm() {
   useEffect(() => {
     if (videoConfig) {
       setEnabled(videoConfig.enabled);
+      setStoreVideos(videoConfig.storeVideos ?? true);
       setMaxLengthSeconds(videoConfig.maxLengthSeconds);
       setYtDlpVersion(videoConfig.ytDlpVersion);
       setTranscriptionProvider(videoConfig.transcriptionProvider);
@@ -162,6 +164,7 @@ export default function VideoProcessingForm() {
     try {
       await updateVideoConfig({
         enabled,
+        storeVideos,
         maxLengthSeconds,
         ytDlpVersion,
         transcriptionProvider,
@@ -190,6 +193,19 @@ export default function VideoProcessingForm() {
           {t("configureWarning")}
         </div>
       )}
+
+      <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-1">
+          <span className="font-medium">{t("storeVideos")}</span>
+          <span className="text-default-500 text-base">{t("storeVideosDescription")}</span>
+        </div>
+        <Switch
+          color="success"
+          isDisabled={!enabled}
+          isSelected={storeVideos}
+          onValueChange={setStoreVideos}
+        />
+      </div>
 
       <Input
         description={t("maxLengthDescription")}
