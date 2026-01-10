@@ -39,7 +39,7 @@ On my _todolist_ are still in order of current priority:
 - Mobile apps.
 - Public shareable recipe links.
 - Add direclty the recipe from Youtube, Instagram, TikTok or other without leaving the app.
-- <video src="./public/exemple_add_recipe_from_instagram.mp4" width="30%" controls></video>
+- <img src="./public/exemple_add_recipe_from_instagram.gif" width="35%" alt="Grocery list" />
 
 ---
 
@@ -92,7 +92,7 @@ You can add recipes to Norish directly from the iOS share sheet using this short
 - Normally, you can see **Add to Norish**, click on the +
 - Validate on the top right
 - Now you can see the Norish button on the Share Sheet in any app
-- <video src="./public/enable_norish_in_share_scren_ios.mp4" type="video/mp4" width="25%" alt="ios enable norish in share screen ios" />
+<img src="./public/enable_norish_in_share_scren_ios.gif" width="35%" alt="Grocery list" />
 
 
 This allows quick recipe imports from Safari, Youtube, Instagram, Tiktok or other apps.
