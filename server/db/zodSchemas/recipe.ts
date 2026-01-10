@@ -92,8 +92,22 @@ export const RecipeDeleteInputSchema = z.object({
   id: z.uuid(),
 });
 
+// Accept tags as array ["tag1", "tag2"] or comma-separated string "tag1,tag2"
+const tagsInputSchema = z
+  .union([z.array(z.string()), z.string()])
+  .optional()
+  .transform((val) => {
+    if (!val) return undefined;
+    if (Array.isArray(val)) return val;
+    return val
+      .split(",")
+      .map((t) => t.trim())
+      .filter((t) => t.length > 0);
+  });
+
 export const RecipeImportInputSchema = z.object({
   url: z.url(),
+  tags: tagsInputSchema,
 });
 
 export const RecipeConvertInputSchema = z.object({

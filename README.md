@@ -38,6 +38,9 @@ On my _todolist_ are still in order of current priority:
 
 - Mobile apps.
 - Public shareable recipe links.
+- Add direclty the recipe from Youtube, Instagram, TikTok or other without leaving the app.
+
+<video src="./public/exemple_add_recipe_from_instagram.mp4" type="video/mp4" width="25%" alt="ios enable norish in share screen ios" />
 
 ---
 
@@ -66,6 +69,34 @@ On my _todolist_ are still in order of current priority:
 - **Local AI** In theory Norish supports local AI providers - however I have not tested this. Although I am looking to buy a machine that is capable.
 
 _Note: All AI related features seem to be rather slow for me using the OpenAI API. I am not sure why this is your results may vary._
+
+---
+
+## iOS Shortcut
+
+You can add recipes to Norish directly from the iOS share sheet using this shortcut: [Download iOS Shortcut](https://www.icloud.com/shortcuts/9fedba4768b4470abce9615cab19d0fd).
+
+#### After adding the shortcut, you need to edit it to configure:
+- Your Norish domain URL in the **Get contents of** section (e.g., `https://your-norish-instance.com`)
+- Your API key in the **Get contents of** section (You need to collapse the section), which can be generated and managed in Norish under Settings.
+- If you don't want the popup that asks for the tags when you add a recipe, just remove the section **Ask for Text with tags separated by ,**
+- <img src="./public/change_shortcut_variable.PNG" width="25%" alt="change ios shortcut variable" />
+
+
+#### Enable the Shortcut in the ShareView
+
+- Open Safari
+- Go to any website
+- Click on the 3 dots on the bottom right
+- Click on More
+- Click on Edit Actions
+- Normally, you can see **Add to Norish**, click on the +
+- Validate on the top right
+- Now you can see the Norish button on the Share Sheet in any app
+- <video src="./public/enable_norish_in_share_scren_ios.mp4" type="video/mp4" width="25%" alt="ios enable norish in share screen ios" />
+
+
+This allows quick recipe imports from Safari, Youtube, Instagram, Tiktok or other apps.
 
 ---
 

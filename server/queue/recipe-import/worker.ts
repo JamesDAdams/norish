@@ -34,7 +34,7 @@ const log = createLogger("worker:recipe-import");
  * Called by the worker for each job.
  */
 async function processImportJob(job: Job<RecipeImportJobData>): Promise<void> {
-  const { url, recipeId, userId, householdKey, householdUserIds } = job.data;
+  const { url, recipeId, userId, householdKey, householdUserIds, tags: providedTags } = job.data;
 
   log.info(
     { jobId: job.id, url, recipeId, attempt: job.attemptsMade + 1 },
@@ -95,7 +95,18 @@ async function processImportJob(job: Job<RecipeImportJobData>): Promise<void> {
     throw new Error("Failed to parse recipe from URL");
   }
 
-  const createdId = await createRecipeWithRefs(recipeId, userId, parseResult.recipe);
+  // Merge provided tags with parsed tags (deduplicated by name)
+  const parsedTags = parseResult.recipe.tags ?? [];
+  const providedTagObjects = providedTags?.map((name) => ({ name })) ?? [];
+  const mergedTags = [
+    ...parsedTags,
+    ...providedTagObjects.filter((pt) => !parsedTags.some((t) => t.name === pt.name)),
+  ];
+
+  const createdId = await createRecipeWithRefs(recipeId, userId, {
+    ...parseResult.recipe,
+    tags: mergedTags,
+  });
 
   if (!createdId) {
     throw new Error("Failed to save imported recipe");

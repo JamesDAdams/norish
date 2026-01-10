@@ -7,6 +7,7 @@ export interface RecipeImportJobData {
   householdKey: string;
   householdUserIds: string[] | null;
   forceAI?: boolean;
+  tags?: string[];
 }
 
 export type AddImportJobResult =

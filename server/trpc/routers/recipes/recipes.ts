@@ -286,7 +286,7 @@ const deleteProcedure = authedProcedure
 const importFromUrlProcedure = authedProcedure
   .input(RecipeImportInputSchema.extend({ forceAI: z.boolean().optional() }))
   .mutation(async ({ ctx, input }) => {
-    const { url, forceAI } = input;
+    const { url, forceAI, tags } = input;
     const recipeId = crypto.randomUUID();
 
     // Add job to queue - returns conflict status if duplicate in queue
@@ -298,6 +298,7 @@ const importFromUrlProcedure = authedProcedure
       householdKey: ctx.householdKey,
       householdUserIds: ctx.householdUserIds,
       forceAI,
+      tags,
     });
 
     if (result.status === "exists" || result.status === "duplicate") {
