@@ -97,15 +97,13 @@ async function processImportJob(job: Job<RecipeImportJobData>): Promise<void> {
 
   // Merge provided tags with parsed tags (deduplicated by name)
   const parsedTags = parseResult.recipe.tags ?? [];
-  const providedTagObjects = providedTags?.map((name) => ({ name })) ?? [];
-  const mergedTags = [
-    ...parsedTags,
-    ...providedTagObjects.filter((pt) => !parsedTags.some((t) => t.name === pt.name)),
-  ];
+  const parsedTagNames = new Set(parsedTags.map((t) => t.name));
+  // Filter out provided tags that already exist in parsed tags, then convert to { name } objects
+  const newTags = providedTags?.filter((name) => !parsedTagNames.has(name)).map((name) => ({ name })) ?? [];
 
   const createdId = await createRecipeWithRefs(recipeId, userId, {
     ...parseResult.recipe,
-    tags: mergedTags,
+    tags: [...parsedTags, ...newTags],
   });
 
   if (!createdId) {
