@@ -73,7 +73,7 @@ _Note: All AI related features seem to be rather slow for me using the OpenAI AP
 
 ## iOS Shortcut
 
-You can add recipes to Norish directly from the iOS share sheet using this shortcut: [Download iOS Shortcut](https://www.icloud.com/shortcuts/9fedba4768b4470abce9615cab19d0fd).
+You can add recipes to Norish directly from the iOS share sheet using this shortcut: [Download iOS Shortcut](https://www.icloud.com/shortcuts/e99ca2e8abf141d7b6cb63f2739aee1a).
 
 #### After adding the shortcut, you need to edit it to configure:
 - Your Norish domain URL in the **Get contents of** section (e.g., `https://your-norish-instance.com`)
