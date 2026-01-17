@@ -76,11 +76,11 @@ _Note: All AI related features seem to be rather slow for me using the OpenAI AP
 You can add recipes to Norish directly from the iOS share sheet using this shortcut: [Download iOS Shortcut](https://www.icloud.com/shortcuts/e99ca2e8abf141d7b6cb63f2739aee1a).
 
 #### After adding the shortcut, you need to edit it to configure:
+
 - Your Norish domain URL in the **Get contents of** section (e.g., `https://your-norish-instance.com`)
 - Your API key in the **Get contents of** section (You need to collapse the section), which can be generated and managed in Norish under Settings.
 - If you don't want the popup that asks for the tags when you add a recipe, just remove the section **Ask for Text with tags separated by ,**
 - <img src="./public/change_shortcut_variable.PNG" width="25%" alt="change ios shortcut variable" />
-
 
 #### Enable the Shortcut in the ShareView
 
@@ -92,8 +92,7 @@ You can add recipes to Norish directly from the iOS share sheet using this short
 - Normally, you can see **Add to Norish**, click on the +
 - Validate on the top right
 - Now you can see the Norish button on the Share Sheet in any app
-<img src="./public/enable_norish_in_share_scren_ios.gif" width="35%" alt="Grocery list" />
-
+  <img src="./public/enable_norish_in_share_scren_ios.gif" width="35%" alt="Grocery list" />
 
 This allows quick recipe imports from Safari, Youtube, Instagram, Tiktok or other apps.
 

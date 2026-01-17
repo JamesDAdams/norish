@@ -99,7 +99,8 @@ async function processImportJob(job: Job<RecipeImportJobData>): Promise<void> {
   const parsedTags = parseResult.recipe.tags ?? [];
   const parsedTagNames = new Set(parsedTags.map((t) => t.name));
   // Filter out provided tags that already exist in parsed tags, then convert to { name } objects
-  const newTags = providedTags?.filter((name) => !parsedTagNames.has(name)).map((name) => ({ name })) ?? [];
+  const newTags =
+    providedTags?.filter((name) => !parsedTagNames.has(name)).map((name) => ({ name })) ?? [];
 
   const createdId = await createRecipeWithRefs(recipeId, userId, {
     ...parseResult.recipe,
