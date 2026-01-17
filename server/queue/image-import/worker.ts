@@ -24,7 +24,7 @@ import {
   addRecipeImages,
 } from "@/server/db";
 import { extractRecipeFromImages } from "@/server/ai/image-recipe-parser";
-import { saveImageBytes } from "@/server/downloader";
+import { saveImageBytes, deleteRecipeImagesDir } from "@/server/downloader";
 
 const log = createLogger("worker:image-import");
 
@@ -85,7 +85,7 @@ async function processImageImportJob(job: Job<ImageImportJobData>): Promise<void
 
     try {
       const imageBytes = Buffer.from(firstFile.data, "base64");
-      const imagePath = await saveImageBytes(imageBytes, firstFile.filename);
+      const imagePath = await saveImageBytes(imageBytes, recipeId);
 
       await addRecipeImages(createdId, [{ image: imagePath, order: 0 }]);
       log.debug({ recipeId: createdId }, "Saved first uploaded image as recipe image");
@@ -133,6 +133,8 @@ async function handleJobFailed(
     },
     "Image import job failed"
   );
+
+  await deleteRecipeImagesDir(recipeId);
 
   // Emit failed event (removes skeleton)
   const policy = await getRecipePermissionPolicy();

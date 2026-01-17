@@ -16,27 +16,33 @@ import { MiniCalendar, MiniGroceries } from "@/components/Panel/consumers";
 import SmartMarkdownRenderer from "@/components/shared/smart-markdown-renderer";
 import { RecipeDashboardDTO } from "@/types";
 import { formatMinutesHM } from "@/lib/helpers";
-import { useRecipesContext } from "@/context/recipes-context";
 import { useAppStore } from "@/store/useAppStore";
 import { usePermissionsContext } from "@/context/permissions-context";
-import { useFavoritesQuery, useFavoritesMutation } from "@/hooks/favorites";
-import { useActiveAllergies } from "@/hooks/user";
 
-function RecipeCardComponent({ recipe }: { recipe: RecipeDashboardDTO }) {
+type RecipeCardProps = {
+  recipe: RecipeDashboardDTO;
+  isFavorite: boolean;
+  allergies: string[];
+  onToggleFavorite: (recipeId: string) => void;
+  onDelete: (recipeId: string) => void;
+};
+
+function RecipeCardComponent({
+  recipe,
+  isFavorite: recipeIsFavorite,
+  allergies,
+  onToggleFavorite,
+  onDelete,
+}: RecipeCardProps) {
   const router = useRouter();
   const rowRef = useRef<SwipeableRowRef>(null);
-  const { mobileSearchOpen } = useAppStore((s) => s);
-  const { deleteRecipe } = useRecipesContext();
+  const mobileSearchOpen = useAppStore((s) => s.mobileSearchOpen);
   const { canDeleteRecipe } = usePermissionsContext();
-  const { isFavorite: checkFavorite } = useFavoritesQuery();
-  const { toggleFavorite } = useFavoritesMutation();
-  const { allergies } = useActiveAllergies();
   const [open, setOpen] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [groceriesOpen, setGroceriesOpen] = useState(false);
   const t = useTranslations("recipes.card");
 
-  const isFavorite = checkFavorite(recipe.id);
   const averageRating = recipe.averageRating ?? null;
 
   const handleNavigate = useCallback(() => {
@@ -53,20 +59,20 @@ function RecipeCardComponent({ recipe }: { recipe: RecipeDashboardDTO }) {
   const allTags = recipe.tags ?? [];
   const description = recipe.description?.trim() || "";
 
-  // Get thumbnail from first gallery image or fall back to legacy image
-  const thumbnailImage = recipe.images?.[0]?.image ?? recipe.image;
+  // Get thumbnail from the legacy image field
+  const thumbnailImage = recipe.image;
 
   function _canClick() {
     return !open && !mobileSearchOpen;
   }
 
   const handleToggleFavorite = useCallback(() => {
-    toggleFavorite(recipe.id);
-  }, [toggleFavorite, recipe.id]);
+    onToggleFavorite(recipe.id);
+  }, [onToggleFavorite, recipe.id]);
 
   const deleteRecipeButton = useCallback(() => {
-    deleteRecipe(recipe.id);
-  }, [deleteRecipe, recipe.id]);
+    onDelete(recipe.id);
+  }, [onDelete, recipe.id]);
 
   // Check if user can delete this recipe
   // Recipes without owner don not have restrictions
@@ -160,7 +166,7 @@ function RecipeCardComponent({ recipe }: { recipe: RecipeDashboardDTO }) {
                 {/* top meta data */}
                 <RecipeMetadata
                   averageRating={averageRating}
-                  isFavorite={isFavorite}
+                  isFavorite={recipeIsFavorite}
                   servings={servings}
                   timeLabel={timeLabel}
                   onOptionsPress={() => {
@@ -219,9 +225,16 @@ function RecipeCardComponent({ recipe }: { recipe: RecipeDashboardDTO }) {
   );
 }
 
-// Memoize to prevent unnecessary re-renders during VirtuosoGrid scroll
-// The component only needs to re-render when the recipe data changes
+// Memoize to prevent unnecessary re-renders during virtual list scroll
+// The component only needs to re-render when the recipe data or favorite status changes
 const RecipeCard = memo(RecipeCardComponent, (prevProps, nextProps) => {
+  // Check primitive props first (cheap)
+  if (prevProps.isFavorite !== nextProps.isFavorite) return false;
+  if (prevProps.allergies !== nextProps.allergies) return false;
+  // Functions are stable via useCallback in parent, but check identity anyway
+  if (prevProps.onToggleFavorite !== nextProps.onToggleFavorite) return false;
+  if (prevProps.onDelete !== nextProps.onDelete) return false;
+
   const prev = prevProps.recipe;
   const next = nextProps.recipe;
 
@@ -237,8 +250,7 @@ const RecipeCard = memo(RecipeCardComponent, (prevProps, nextProps) => {
     prev.totalMinutes === next.totalMinutes &&
     prev.averageRating === next.averageRating &&
     prev.updatedAt?.getTime() === next.updatedAt?.getTime() &&
-    prev.tags?.length === next.tags?.length &&
-    prev.images?.length === next.images?.length
+    prev.tags?.length === next.tags?.length
   );
 });
 

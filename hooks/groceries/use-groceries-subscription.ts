@@ -3,7 +3,7 @@
 import { useSubscription } from "@trpc/tanstack-react-query";
 import { addToast } from "@heroui/react";
 
-import { useGroceriesQuery } from "./use-groceries-query";
+import { useGroceriesCacheHelpers } from "./use-groceries-cache";
 
 import { useTRPC } from "@/app/providers/trpc-provider";
 
@@ -11,10 +11,12 @@ import { useTRPC } from "@/app/providers/trpc-provider";
  * Hook that subscribes to all grocery-related WebSocket events
  * and updates the query cache accordingly.
  *
+ * Uses internal cache helpers - no props required.
+ * Safe to call from context providers without causing recursion.
  */
 export function useGroceriesSubscription() {
   const trpc = useTRPC();
-  const { setGroceriesData, invalidate } = useGroceriesQuery();
+  const { setGroceriesData, invalidate } = useGroceriesCacheHelpers();
 
   // onCreated
   useSubscription(

@@ -1,15 +1,22 @@
 "use client";
 
-import type { Slot, CalendarItemViewDto } from "@/types";
+import type { CalendarItemViewDto, Slot } from "@/types";
 
 import { useSubscription } from "@trpc/tanstack-react-query";
 import { addToast } from "@heroui/react";
 
-import { useCalendarQuery } from "./use-calendar-query";
+import { useCalendarCacheHelpers } from "./use-calendar-cache";
 
 import { useTRPC } from "@/app/providers/trpc-provider";
 
-export function useCalendarSubscription(startISO: string, endISO: string) {
+/**
+ * Hook that subscribes to all calendar-related WebSocket events
+ * and updates the query cache accordingly.
+ *
+ * Uses internal cache helpers - no props required.
+ * Safe to call from context providers without causing recursion.
+ */
+export function useCalendarSubscription() {
   const trpc = useTRPC();
   const {
     setCalendarData,
@@ -18,7 +25,7 @@ export function useCalendarSubscription(startISO: string, endISO: string) {
     removeNoteFromCache,
     updateNoteInCache,
     invalidate,
-  } = useCalendarQuery(startISO, endISO);
+  } = useCalendarCacheHelpers();
 
   // onRecipePlanned
   useSubscription(

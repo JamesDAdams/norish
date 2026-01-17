@@ -117,7 +117,6 @@ async function transcribeWithOpenAI(
   const result = await transcribe({
     model: openai.transcription(model),
     audio: audioData,
-    providerOptions: { openai: { language: "en" } },
   });
 
   logAISDKCompletion("OpenAI", result);
@@ -141,7 +140,6 @@ async function transcribeWithGroq(
   const result = await transcribe({
     model: groq.transcription(model),
     audio: audioData,
-    providerOptions: { groq: { language: "en" } },
   });
 
   logAISDKCompletion("Groq", result);
@@ -159,8 +157,21 @@ async function transcribeWithAzure(
   endpoint?: string
 ): Promise<AIResult<string>> {
   logStart("Azure", audioPath, model, { endpoint });
+  let azure;
 
-  const azure = endpoint ? createAzure({ apiKey, baseURL: endpoint }) : createAzure({ apiKey });
+  if (endpoint) {
+    let baseUrl = endpoint.replace(/\/+$/, "");
+
+    // Ensure /openai path is included for SDK compatibility
+    if (!baseUrl.endsWith("/openai")) {
+      baseUrl = `${baseUrl}/openai`;
+    }
+
+    azure = createAzure({ apiKey, baseURL: baseUrl });
+  } else {
+    azure = createAzure({ apiKey });
+  }
+
   const audioData = await readFile(audioPath);
 
   const result = await transcribe({
@@ -202,7 +213,6 @@ async function transcribeWithGenericOpenAI(
   const response = await client.audio.transcriptions.create({
     file: createReadStream(audioPath),
     model,
-    language: "en",
     response_format: "json",
   });
 

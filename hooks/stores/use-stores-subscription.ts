@@ -2,17 +2,20 @@
 
 import { useSubscription } from "@trpc/tanstack-react-query";
 
-import { useStoresQuery } from "./use-stores-query";
+import { useStoresCacheHelpers } from "./use-stores-cache";
 
 import { useTRPC } from "@/app/providers/trpc-provider";
 
 /**
  * Hook that subscribes to all store-related WebSocket events
  * and updates the query cache accordingly.
+ *
+ * Uses internal cache helpers - no props required.
+ * Safe to call from context providers without causing recursion.
  */
 export function useStoresSubscription() {
   const trpc = useTRPC();
-  const { setStoresData, invalidate: _invalidate } = useStoresQuery();
+  const { setStoresData } = useStoresCacheHelpers();
 
   // onCreated
   useSubscription(

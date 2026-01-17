@@ -1,11 +1,18 @@
 import createNextIntlPlugin from "next-intl/plugin";
+import { readFileSync } from "fs";
+
+const packageJson = JSON.parse(readFileSync("./package.json", "utf-8"));
 
 const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 
 export default withNextIntl({
   output: "standalone",
+  productionBrowserSourceMaps: false,
   allowedDevOrigins: ["localhost", "192.168.2.13"],
   devIndicators: false,
+  env: {
+    NEXT_PUBLIC_APP_VERSION: packageJson.version,
+  },
   serverExternalPackages: [
     "pino",
     "pino-pretty",

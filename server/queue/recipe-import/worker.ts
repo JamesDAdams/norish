@@ -26,6 +26,7 @@ import {
   getAllergiesForUsers,
 } from "@/server/db";
 import { parseRecipeFromUrl } from "@/server/parser";
+import { deleteRecipeImagesDir } from "@/server/downloader";
 
 const log = createLogger("worker:recipe-import");
 
@@ -89,8 +90,9 @@ async function processImportJob(job: Job<RecipeImportJobData>): Promise<void> {
   }
 
   // Parse and create recipe
-  const parseResult = await parseRecipeFromUrl(url, allergyNames, job.data.forceAI);
+  const parseResult = await parseRecipeFromUrl(url, recipeId, allergyNames, job.data.forceAI);
 
+  log.debug({ parseResult }, "Recipe parse result");
   if (!parseResult.recipe) {
     throw new Error("Failed to parse recipe from URL");
   }
@@ -175,6 +177,8 @@ async function handleJobFailed(
     },
     "Recipe import job failed"
   );
+
+  await deleteRecipeImagesDir(recipeId);
 
   if (isFinalFailure) {
     // Emit failed event to remove skeleton

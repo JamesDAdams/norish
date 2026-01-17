@@ -24,6 +24,7 @@ import { extractRecipeNodesFromJsonLd } from "@/server/parser/jsonld";
 import { normalizeRecipeFromJson } from "@/server/parser/normalize";
 import { extractRecipeWithAI } from "@/server/ai/recipe-parser";
 import { MAX_RECIPE_PASTE_CHARS } from "@/types/uploads";
+import { deleteRecipeImagesDir } from "@/server/downloader";
 
 const log = createLogger("worker:paste-import");
 
@@ -61,6 +62,7 @@ interface ParseResult {
 
 async function parseFromPastedText(
   text: string,
+  recipeId: string,
   allergies?: string[],
   forceAI?: boolean
 ): Promise<ParseResult> {
@@ -79,7 +81,7 @@ async function parseFromPastedText(
     }
 
     const html = `<html><body><main><h1>Pasted recipe</h1><p>${escapeHtml(trimmed)}</p></main></body></html>`;
-    const ai = await extractRecipeWithAI(html, undefined, allergies);
+    const ai = await extractRecipeWithAI(html, recipeId, undefined, allergies);
 
     if (ai.success && hasStepsAndIngredients(ai.data)) {
       return { recipe: ai.data, usedAI: true };
@@ -93,7 +95,7 @@ async function parseFromPastedText(
     const nodes = extractRecipeNodesFromJsonLd(html);
 
     if (nodes.length > 0) {
-      const normalized = await normalizeRecipeFromJson(nodes[0]);
+      const normalized = await normalizeRecipeFromJson(nodes[0], recipeId);
 
       if (normalized) {
         normalized.url = null;
@@ -109,7 +111,7 @@ async function parseFromPastedText(
   }
 
   const html = `<html><body><main><h1>Pasted recipe</h1><p>${escapeHtml(trimmed)}</p></main></body></html>`;
-  const ai = await extractRecipeWithAI(html, undefined, allergies);
+  const ai = await extractRecipeWithAI(html, recipeId, undefined, allergies);
 
   if (ai.success && hasStepsAndIngredients(ai.data)) {
     return { recipe: ai.data, usedAI: true };
@@ -148,7 +150,7 @@ async function processPasteImportJob(job: Job<PasteImportJobData>): Promise<void
     );
   }
 
-  const parseResult = await parseFromPastedText(text, allergyNames, forceAI);
+  const parseResult = await parseFromPastedText(text, recipeId, allergyNames, forceAI);
 
   const createdId = await createRecipeWithRefs(recipeId, userId, parseResult.recipe);
 
@@ -215,6 +217,8 @@ async function handleJobFailed(
     },
     "Paste import job failed"
   );
+
+  await deleteRecipeImagesDir(recipeId);
 
   if (isFinalFailure) {
     const policy = await getRecipePermissionPolicy();

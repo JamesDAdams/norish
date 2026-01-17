@@ -11,3 +11,5 @@ export {
   type GroceryCreateData,
 } from "./use-groceries-mutations";
 export { useGroceriesSubscription } from "./use-groceries-subscription";
+export { useGroceriesCacheHelpers, type GroceriesCacheHelpers } from "./use-groceries-cache";
+export { useGroupedGroceryDnd } from "./use-grouped-grocery-dnd";
